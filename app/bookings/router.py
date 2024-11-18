@@ -14,17 +14,19 @@ router = APIRouter(
     tags=["Bookings"]
 )
 
-@router.get("")
+@router.get("/my_booking")
 async def get_bookings(user:Users = Depends(get_current_user)):
     return await  BaseDAO.find_all(Bookings, user_id = user.id)
 
-@router.get("/rooms_amount")
+@router.post("/rooms_amount")
 async def booking_add(room_id:int, date_from: date, date_to:date, user:Users = Depends(get_current_user)):
     booking = await BaseDAO.add_booking(user.id, room_id,date_from, date_to)
     if not booking:
         raise RoomCantBeBookedException
 
 
-
+@router.delete("/delete_booking")
+async def booking_delete(user:Users = Depends(get_current_user)):
+    return await BaseDAO.delete_booking(Bookings, user.id)
 
 

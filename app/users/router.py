@@ -4,7 +4,7 @@ from app.exceptions import UserAlreadyExistException, IncorrectLoginException
 from app.users.auth import get_password_hash, authenticate_user, create_access_token
 from app.users.dependencies import get_current_user
 from app.users.models import Users
-from app.users.schemas import SUserRegister, SUserAuth
+from app.users.schemas import SUserRegister
 
 router = APIRouter(
     prefix="/auth",
@@ -23,13 +23,13 @@ async def register_user(user_email, password)->SUserRegister:
     return {"email":user_email, "password":hashed_password}
 
 @router.post("/login")
-async def login_user(response: Response, user_data:SUserAuth):
-    user = await authenticate_user(user_data.email, user_data.password)
+async def login_user(response: Response, user_email, password):
+    user = await authenticate_user(user_email, password)
     if not user:
         raise IncorrectLoginException
     access_token = create_access_token({"sub": str(user.id)})
     response.set_cookie("booking_access_token", access_token, httponly=True)
-    return access_token
+    return f"Welcome to the platform {user_email}!"
 
 @router.post("/logout")
 async def logout_user(response:Response):
@@ -38,4 +38,4 @@ async def logout_user(response:Response):
 
 @router.get("/me")
 async def read_user(user:Users = Depends(get_current_user)):
-    return user
+    return f"email = {user.email}|password = {user.hashed_password}"
